@@ -1,0 +1,41 @@
+# Login to AZ
+    az login
+
+# set account
+    $subscriptionId = "fda533ed-1efe-494a-8694-e5298b092f85";    
+    az account set --subscription $subscriptionId
+# set resource group name
+    $resourceGroupName = "hobron";
+# Create resource group
+    # az group create --name hobron --location eastus2
+    # az configure --defaults group=hobron
+    az group list --output table
+# Create a virtual network
+    az network vnet create --name rgdemo-vnet --resource-group $resourceGroupName --address-prefix 10.0.0.0/16 --subnet-name rgdemo-subnet --subnet-prefix 10.0.0.0/24
+#create a public network 
+    az network public-ip create --name rgdemo-lb-ip1 --resource-group $resourceGroupName
+# List public ip address 
+    az network public-ip list --output table
+# Create a network security group
+    az network nsg create --name rgdemo-nsg --resource-group $resourceGroupName
+# create a network security group rule
+    az network nsg rule create --name rgdemo-nsg-allow_ssh-rule --nsg-name rgdemo-nsg --resource-group $resourceGroupName --access Allow --direction Inbound --protocol Tcp --description "Allow SSH access" --source-address-prefixes "71.114.66.20" --source-port-ranges * --destination-address-prefixes * --destination-port-ranges * --priority 100
+# create a network interface card
+    az network nic create --name rgdemo-nic-1  --resource-group $resourceGroupName --vnet-name rgdemo-vnet --subnet rgdemo-subnet --network-security-group rgdemo-nsg --public-ip-address rgdemo-lnx-ip1
+# List all nics
+    az network nic list --output table
+#azure list all available VM images
+    az vm image list --output table
+# create availability set
+    $availabilitySetName = "rg-aset"
+    az vm availability-set create --name $availabilitySetName --resource-group $resourceGroupName --subscription $subscriptionId
+# List availability set
+    az vm availability-set show -n $availabilitySetName -g $resourceGroupName
+# create publicly accessible VM
+    az vm create --name rgdemo-lnx-vm1 --admin-username rgadmin --resource-group $resourceGroupName --availability-set $availabilitySetName --nics rgdemo-nic-1 --image UbuntuLTS --ssh-key-values '~/.ssh/az_id_rsa.pub' --size Standard_B2s
+# create a virtual machine
+    az vm create --name rgdemo-lnx-vm2 --admin-username rgadmin --admin-password _BlackP3pp3r_ --resource-group hobron --nics rgdemo-nic-2 --image UbuntuLTS --size Standard_B2s
+# List all VMs
+    az vm list --output table
+# list all public IP address
+    az vm list-ip-addresses --name rgdemo-lnx-vm1 --output table
